@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>주연시</title>
+<style>
+body{margin:0;background:#0f0f12;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;}
+.container{max-width:520px;margin:0 auto;padding:16px;}
+img{width:100%;border-radius:14px;margin-bottom:12px;}
+.dialogue{min-height:84px;font-size:18px;line-height:1.4;margin:10px 0;}
+button{width:100%;padding:14px;margin:6px 0;border:0;border-radius:12px;font-size:16px;background:#ffffff;color:#000}
+button.secondary{background:#2a2a2f;color:#fff}
+.footer{opacity:.6;font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="container">
+  <img id="cg" src="photo1.jpg" />
+  <div class="dialogue" id="dialogue"></div>
+  <div id="choices"></div>
+  <div class="footer" id="debug"></div>
+</div>
+
+<script>
+let affection=0, step=0;
+const A_SCORES=[10,9,8,11,10,6,12,9,11,14];
+const PHOTOS={
+  q:["photo1.jpg","photo4.jpg","photo7.jpg","photo10.jpg","photo13.jpg","photo16.jpg","photo19.jpg","photo22.jpg","photo25.jpg","photo28.jpg"],
+  A:["photo2.jpg","photo5.jpg","photo8.jpg","photo11.jpg","photo14.jpg","photo17.jpg","photo20.jpg","photo23.jpg","photo26.jpg","photo29.jpg"],
+  B:["photo3.jpg","photo6.jpg","photo9.jpg","photo12.jpg","photo15.jpg","photo18.jpg","photo21.jpg","photo24.jpg","photo27.jpg","photo30.jpg"],
+  ending:{three:"photo31.jpg",couple:"photo32.jpg",break:"photo33.jpg"}
+};
+const questions=[
+{q:"처음 보자마자 말 거는 거, 원래 이런 스타일이야?",A:{t:"응. 너가 마음에 들어.",r:"내가 그렇게 특별해 보여? 말은 잘하네."},B:{t:"어쩌라고 인사도 안돼?.",r:"왜? 나랑 섹스하고싶어?"}},
+{q:"내 말투 좀 센 거 같지 않아?",A:{t:"그게 오히려 매력이지.",r:"까는 소리하지마. 감당은 할 수 있고?"},B:{t:"사람마다 다르지.",r:"애매한 대답 제일 싫은 거 알지?"}},
+{q:"연락 느린 사람 진짜 싫어하는데.",A:{t:"그럼 내가 맞춰볼게.",r:"말은 그렇게 하지. 나랑 섹스도 가능해?"},B:{t:"나도 나름 이유는 있어.",r:"핑계 까시구요."}},
+{q:"아까 다른 여자랑 웃으면서 얘기하던데?",A:{t:"신경 쓰였다면 미안.",r:"미안하단 말보다 너의 야추를 나한테 줘."},B:{t:"그냥 아는 사람이야.",r:"그냥 아는 사람인데 그렇게 웃어?"}},
+{q:"지금 나한테 말대꾸하는 거야?",A:{t:"아니, 솔직해지고 싶었어.",r:"솔직한 건 좋은데… 선은 지켜."},B:{t:"기분 상하게 하려던 건 아니야.",r:"그럼 결과는 왜 이 모양이야?"}},
+{q:"율이 언니랑 나랑 셋이 하고 싶지?",A:{t:"응 셋이 하자.",r:"하… 생각보다 솔직하네. 재미는 있겠다."},B:{t:"아냐, 너랑만 하고 싶어.",r:"너가 나를 감당할 수 있어?"}},
+{q:"날 왜 먹고싶은건데?",A:{t:"맛있어 보이니깐.",r:"쉽게 말하네. 그 말에 책임질 수는 있고?"},B:{t:"그냥 내 스타일이니깐.",r:"그 정도로는 나 안 움직여."}},
+{q:"연애하면 서로 간섭은 좀 해야지?",A:{t:"내가 집착이 좀 심해.",r:"좋아."},B:{t:"서로 믿는 게 먼저지.",r:"말은 착한데, 현실은 다르더라."}},
+{q:"우리, 오래 갈 수 있을까?",A:{t:"난 진지하게 생각 중이야.",r:"지금 표정 봐. 그 말 무게 아는 얼굴이야."},B:{t:"지금은 즐기자.",r:"역시. 그 정도일 줄 알았어."}},
+{q:"나 감당할 수 있어?",A:{t:"각오하고 왔어.",r:"각오만으로 버틸 수 있을까… 기대는 해볼게."},B:{t:"노력은 해볼게.",r:"애매한 각오는 제일 빨리 무너져."}}
+];
+
+const img=document.getElementById("cg"),dialogue=document.getElementById("dialogue"),choices=document.getElementById("choices"),debug=document.getElementById("debug");
+
+function renderQuestion(){
+  img.src=PHOTOS.q[step];
+  dialogue.innerText="주은년: "+questions[step].q;
+  choices.innerHTML=`<button onclick="choose('A')">${questions[step].A.t}</button><button class="secondary" onclick="choose('B')">${questions[step].B.t}</button>`;
+  debug.innerText=`Q${step+1} / 호감도 ${affection}`;
+}
+function choose(opt){
+  if(opt==="A"){affection+=A_SCORES[step];img.src=PHOTOS.A[step];dialogue.innerText="주은년: "+questions[step].A.r;}
+  else{affection+=1;img.src=PHOTOS.B[step];dialogue.innerText="주은년: "+questions[step].B.r;}
+  choices.innerHTML=`<button onclick="next()">다음으로</button>`;
+}
+function next(){step++; if(step>=questions.length) showEnding(); else renderQuestion();}
+function showEnding(){
+  let endingType="three"; if(affection>=96) endingType="break"; else if(affection>=91) endingType="couple";
+  img.src=PHOTOS.ending[endingType];
+  const ENDING_TEXT={three:"나랑 율이 언니랑 같이 매일매일 쓰리썸 하자",couple:"나랑 매일 밖에서 섹스하자",break:"꺼져 좆만아"};
+  dialogue.innerText="주은년: "+ENDING_TEXT[endingType];
+  choices.innerHTML="";
+  debug.innerText=`엔딩 / 최종 호감도 ${affection}`;
+}
+renderQuestion();
+</script>
+</body>
+</html>
